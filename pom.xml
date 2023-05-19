@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>4.0</version>
+		<version>4.54</version>
 	</parent>
 
 	<artifactId>keycloak</artifactId>
@@ -23,12 +23,13 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<keycloak.version>13.0.0</keycloak.version>
-		<jenkins.version>2.190.1</jenkins.version>
+		<keycloak.version>20.0.2</keycloak.version>
+		<jenkins.version>2.361.1</jenkins.version>
 		<log4j.version>1.7.26</log4j.version>
-		<java.level>8</java.level>
-		<configuration-as-code.version>1.36</configuration-as-code.version>
-		<jackson.version>2.12.2</jackson.version>
+		<java.level>11</java.level>
+		<configuration-as-code.version>1569.vb_72405b_80249</configuration-as-code.version>
+		<jackson.version>2.13.4</jackson.version>
+		<jackson.databind.version>2.13.4.2</jackson.databind.version>
 	</properties>
 
 	<licenses>
@@ -121,7 +122,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
+			<version>${jackson.databind.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jenkins</groupId>
