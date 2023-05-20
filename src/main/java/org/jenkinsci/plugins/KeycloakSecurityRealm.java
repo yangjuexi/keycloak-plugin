@@ -290,6 +290,11 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 
 		}
 
+		if (request.getSession(false) != null) {
+			// prevent session fixation ( SECURITY-2987 )
+			request.changeSessionId();
+		}
+
 		String referer = (String) request.getSession().getAttribute(REFERER_ATTRIBUTE);
 		if (referer != null) {
 			LOGGER.log(Level.FINEST, "Redirecting to " + referer);
