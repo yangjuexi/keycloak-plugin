@@ -25,6 +25,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<keycloak.version>20.0.3</keycloak.version>
 		<jenkins.version>2.361.4</jenkins.version>
+		<hpi.compatibleSinceVersion>2.3.1</hpi.compatibleSinceVersion>
 		<log4j.version>1.7.26</log4j.version>
 		<configuration-as-code.version>1569.vb_72405b_80249</configuration-as-code.version>
 		<jackson.version>2.13.4</jackson.version>
