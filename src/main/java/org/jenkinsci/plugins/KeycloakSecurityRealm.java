@@ -38,6 +38,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.base.Strings;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -130,7 +131,19 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 	 *             -
 	 */
 	@DataBoundConstructor
-	public KeycloakSecurityRealm() throws IOException {
+	public KeycloakSecurityRealm(String keycloakIdp, String keycloakJson, boolean keycloakValidate, boolean keycloakRespectAccessTokenTimeout) throws IOException {
+		super();
+		if (StringUtils.isEmpty(keycloakJson)) {
+			throw new IllegalArgumentException("Keycloak JSON is a mandatory item.");
+		}
+		setKeycloakIdp(keycloakIdp);
+		setKeycloakJson(keycloakJson);
+		setKeycloakValidate(keycloakValidate);
+		setKeycloakRespectAccessTokenTimeout(keycloakRespectAccessTokenTimeout);
+		createFilter();
+	}
+
+	protected KeycloakSecurityRealm() {
 		super();
 		createFilter();
 	}
@@ -375,19 +388,9 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 		}
 
 		@Override
+		@NonNull
 		public String getDisplayName() {
 			return "Keycloak Authentication Plugin";
-		}
-
-		/**
-		 * Constructor
-		 */
-		public DescriptorImpl() {
-			super();
-		}
-
-		public DescriptorImpl(Class<? extends SecurityRealm> clazz) {
-			super(clazz);
 		}
 
 		/**
@@ -399,46 +402,25 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 		*/
 		public FormValidation doCheckKeycloakJson(@QueryParameter String value) throws ServletException {
 			try {
-				if (value != null && !value.isEmpty()) {
+				if (StringUtils.isNotEmpty(value)) {
 					JsonSerialization.readValue(value, AdapterConfig.class);
+				} else {
+					return FormValidation.error("Keycloak JSON is required.");
 				}
 			} catch (IOException ex) {
-				return FormValidation.error("Invalid adapter config");
+				return FormValidation.error("Issue parsing keycloak adapter json. JSON does not appear valid.");
 			}
 			return FormValidation.ok();
 		}
 
 		@Override
-		public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
-			json = json.getJSONObject("keycloak");
-			// if json contains keycloakvalidate then keycloakvalidate is true
-			if (json.containsKey("keycloakValidate")) {
-				LOGGER.log(Level.FINE, "Keycloakvalidate set to true");
-				json.put("keycloakValidate", true);
-				JSONObject validate = json.getJSONObject("keycloakValidate");
-				if (validate.containsKey("keycloakRespectAccessTokenTimeout")) {
-					json.put("keycloakRespectAccessTokenTimeout", validate.getBoolean("keycloakRespectAccessTokenTimeout"));
-					LOGGER.log(Level.FINE, "Respect access token timeout is set to " + validate.getBoolean("keycloakRespectAccessTokenTimeout"));
-				}
-			} else {
-				json.put("keycloakValidate", false);
-				json.put("keycloakRespectAccessTokenTimeout", true);
+		public SecurityRealm newInstance(StaplerRequest request, JSONObject formData) throws FormException {
+			JSONObject keycloakJson = formData.getJSONObject("keycloak").getJSONObject("keycloakJson");
+			if (keycloakJson.isNullObject() || keycloakJson.isEmpty()) {
+				throw new Descriptor.FormException("Keycloak JSON is required.", "keycloakJson");
 			}
-			return super.configure(req, json);
+			return super.newInstance(request, formData);
 		}
-
-		@Restricted(NoExternalUse.class) // Only for loading in from legacy disk
-		@Deprecated
-		public transient String keycloakJson = "";
-		@Restricted(NoExternalUse.class) // Only for loading in from legacy disk
-		@Deprecated
-		public transient String keycloakIdp = "";
-		@Restricted(NoExternalUse.class) // Only for loading in from legacy disk
-		@Deprecated
-		public transient boolean keycloakValidate = false;
-		@Restricted(NoExternalUse.class) // Only for loading in from legacy disk
-		@Deprecated
-		public transient boolean keycloakRespectAccessTokenTimeout = true;
 	}
 
 	/**
@@ -456,7 +438,6 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 	 * @param keycloakJson
 	 *            the configuration
 	 */
-	@DataBoundSetter
 	public void setKeycloakJson(String keycloakJson) {
 		this.keycloakJson = keycloakJson;
 	}
@@ -477,7 +458,6 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 	 * @param keycloakValidate
 	 *            {@link Boolean} if true authentication is checked on each request
 	 */
-	@DataBoundSetter
 	public void setKeycloakValidate(boolean keycloakValidate) {
 		this.keycloakValidate = keycloakValidate;
 	}
@@ -499,7 +479,6 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 	 *            {@link Boolean} whether the expiration of the access token should
 	 *            be checked or not before a token refresh
 	 */
-	@DataBoundSetter
 	public void setKeycloakRespectAccessTokenTimeout(boolean keycloakRespectAccessTokenTimeout) {
 		this.keycloakRespectAccessTokenTimeout = keycloakRespectAccessTokenTimeout;
 	}
@@ -519,7 +498,6 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 	 * @param keycloakIdp {@link String} the keycloak idp hint
 	 *
 	 */
-	@DataBoundSetter
 	public void setKeycloakIdp(String keycloakIdp) {
 		this.keycloakIdp = keycloakIdp;
 	}
@@ -668,21 +646,6 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 		public X509Certificate[] getCertificateChain() {
 			throw new IllegalStateException("Not yet implemented");
 		}
-	}
-
-	private Object readResolve() {
-		if (Strings.isNullOrEmpty(this.keycloakJson)) {
-			getDescriptor().load();
-			DescriptorImpl descriptor = ((DescriptorImpl) getDescriptor());
-			System.out.println("Moo -- " + descriptor.keycloakJson);
-			if (!Strings.isNullOrEmpty(descriptor.keycloakJson)) {
-				this.keycloakJson = descriptor.keycloakJson;
-				this.keycloakIdp = descriptor.keycloakIdp;
-				this.keycloakValidate = descriptor.keycloakValidate;
-				this.keycloakRespectAccessTokenTimeout = descriptor.keycloakRespectAccessTokenTimeout;
-			}
-		}
-		return this;
 	}
 
 }
