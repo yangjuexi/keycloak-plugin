@@ -19,14 +19,6 @@ Installation
 Usage
 ---
 
-You can watch the screencast in
-**[Vimeo](https://vimeo.com/116429910)****/****[YouTube](https://www.youtube.com/watch?v=_WAFuOa53R0)**** ****(You
-may have to put the speaker in high volume)**
-
-**(applies only to the older plugin version)**
-
-**Usage of the newer version:**
-
 #### Step 1 : Create a keycloak client in a realm
 
 Lets call the realm **'ci'** and the client **'jenkins'**  
@@ -49,25 +41,19 @@ created 'devlauer'.
 
 ![](docs/images/Usage_3.JPG)
 
-#### Step 3 : In the Jenkins global settings page paste the content
+#### Step 3 : In the Jenkins global security settings page select the Keycloak Authentication Plugin for the Security Realm and paste the keycloak JSON content
 
-![](docs/images/Usage_4.JPG)
+![](docs/images/Step_3.jpg)
 
-#### Step 4 : In the Security Realm activate the security realm of the plugin
-
-![](docs/images/Usage_5.JPG)
-
-#### Step 5 : Login into jenkins
+#### Step 4 : Log in into jenkins
 
 ![](docs/images/kj6.png)
 
-User would be redirected to keycloak for authentication
+##### Jenkins redirects to keycloak for authentication
 
 ![](docs/images/Usage_6.JPG)
 
-#### Step 7 : Keycloak would redirect back to jenkins
-
-User would be redirected back to callback URL
+##### Keycloak redirects back to Jenkins after successful authentication
 
 ![](docs/images/Usage_7.JPG)  
 
@@ -81,7 +67,7 @@ This plugin uses sematic versioning. For more information refer to [semver]
 
 Changelog
 ---
-This plugin has a dedicated [Changelog].
+Changes are available on the [GitHub Releases] page
 
 Reporting bugs and feature requests
 ---
@@ -121,3 +107,4 @@ This repository was forked from this  [repository](https://www.github.com/devlau
 [GitHub]: https://github.com/jenkinsci/keycloak-plugin
 [Maven]: http://maven.apache.org
 [wiki]: https://wiki.jenkins-ci.org/display/JENKINS/keycloak-plugin
+[GitHub Releases]: https://github.com/jenkinsci/keycloak-plugin/releases

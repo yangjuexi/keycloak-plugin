@@ -7,3 +7,8 @@ bin
 /update-center.key
 .factorypath
 .vscode
+
+.idea
+*.iml
+
+.DS_Store

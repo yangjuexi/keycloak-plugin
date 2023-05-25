@@ -5,7 +5,7 @@ dependencies:
   - any: [ 'pom.xml' ]
 
 documentation:
-  - any: [ '*.md' ]
+  - any: [ '*.md', 'docs/**/*' ]
 
 test:
   - any: [ ' src/test/**/*' ]
