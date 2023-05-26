@@ -21,7 +21,7 @@ public class KeycloakSecurityRealmTest {
     @Test
     @ConfiguredWithCode("casc.yaml")
     public void configure_keycloak() {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.get();
         final KeycloakSecurityRealm securityRealm = (KeycloakSecurityRealm) jenkins.getSecurityRealm();
         assertEquals("{\n" +
 			"  \"realm\": \"master\",\n" +
