@@ -3,6 +3,8 @@ package org.jenkinsci.plugins;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 
 import hudson.security.SecurityRealm;
@@ -50,28 +52,22 @@ public class KeycloakAuthentication extends AbstractAuthenticationToken {
 	private static GrantedAuthority[] buildRoles(AccessToken accessToken) {
 		List<GrantedAuthority> roles;
 		roles = new ArrayList<GrantedAuthority>();
+		Set<String> originRoles = new HashSet<>();
 
 		if (accessToken != null) {
 			// handle realm role
 			if (accessToken.getRealmAccess() != null) {
-				for (String role : accessToken.getRealmAccess().getRoles()) {
-					roles.add(new GrantedAuthorityImpl(role));
-				}
+				originRoles.addAll(accessToken.getRealmAccess().getRoles());
 			}
 			// handle client role of current client
 			if (accessToken.getIssuedFor() != null
 					&& accessToken.getResourceAccess(accessToken.getIssuedFor()) != null) {
-				for (String role : accessToken.getResourceAccess(accessToken.getIssuedFor()).getRoles()) {
-					roles.add(new GrantedAuthorityImpl(role));
-				}
+				originRoles.addAll(accessToken.getResourceAccess(accessToken.getIssuedFor()).getRoles());
 			}
-			if (accessToken.getOtherClaims().containsKey("roles")) {
-				for (String role : (List<String>) accessToken.getOtherClaims().get("roles")) {
-					roles.add(new GrantedAuthorityImpl(role));
-				}
+			for (String role : originRoles) {
+				roles.add(new GrantedAuthorityImpl(role));
 			}
 		}
-
 		roles.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
 		return roles.toArray(new GrantedAuthority[roles.size()]);
 	}
