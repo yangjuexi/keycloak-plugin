@@ -73,7 +73,6 @@ public class KeycloakAuthentication extends AbstractAuthenticationToken {
 		}
 
 		roles.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
-		System.out.println("[keycloak] roles are " + roles);
 		return roles.toArray(new GrantedAuthority[roles.size()]);
 	}
 
