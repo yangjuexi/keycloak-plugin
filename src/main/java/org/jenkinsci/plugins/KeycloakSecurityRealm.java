@@ -26,20 +26,15 @@ THE SOFTWARE.
  */
 package org.jenkinsci.plugins;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.security.cert.X509Certificate;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
-import com.google.common.base.Strings;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.model.Descriptor;
+import hudson.model.User;
+import hudson.security.SecurityRealm;
+import hudson.tasks.Mailer;
+import hudson.util.FormValidation;
 import jenkins.security.SecurityListener;
+import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
 import org.acegisecurity.AuthenticationManager;
@@ -48,11 +43,7 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.OAuth2Constants;
-import org.keycloak.adapters.AdapterDeploymentContext;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.KeycloakDeploymentBuilder;
-import org.keycloak.adapters.OIDCHttpFacade;
-import org.keycloak.adapters.ServerRequest;
+import org.keycloak.adapters.*;
 import org.keycloak.adapters.ServerRequest.HttpFailure;
 import org.keycloak.adapters.rotation.AdapterTokenVerifier;
 import org.keycloak.adapters.spi.AuthenticationError;
@@ -65,26 +56,18 @@ import org.keycloak.representations.IDToken;
 import org.keycloak.representations.adapters.config.AdapterConfig;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.util.TokenUtil;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.Header;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
 
-import hudson.Extension;
-import hudson.model.Descriptor;
-import hudson.model.User;
-import hudson.security.SecurityRealm;
-import hudson.tasks.Mailer;
-import hudson.util.FormValidation;
-import net.sf.json.JSONObject;
+import javax.security.cert.X509Certificate;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -265,7 +248,8 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 
 				IDToken idToken = input.readJsonContent(IDToken.class);
 
-				KeycloakAuthentication auth = new KeycloakAuthentication(idToken, token, refreshToken, tokenResponse);
+				String resourceName = keycloakDeployment.getResourceName();
+				KeycloakAuthentication auth = new KeycloakAuthentication(idToken, token, refreshToken, tokenResponse, resourceName);
 				SecurityContextHolder.getContext().setAuthentication(auth);
 
 				User currentUser = User.current();

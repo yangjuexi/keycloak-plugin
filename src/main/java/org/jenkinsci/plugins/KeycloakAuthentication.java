@@ -1,9 +1,6 @@
 package org.jenkinsci.plugins;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import hudson.security.SecurityRealm;
 
@@ -36,8 +33,8 @@ public class KeycloakAuthentication extends AbstractAuthenticationToken  {
 	 * @param refreshToken the keycloak refresh token
 	 * @param tokenResponse the {@link AccessTokenResponse}
 	 */
-	public KeycloakAuthentication(IDToken idToken, AccessToken accessToken, String refreshToken, AccessTokenResponse tokenResponse) {
-		super(buildRoles(accessToken));
+	public KeycloakAuthentication(IDToken idToken, AccessToken accessToken, String refreshToken, AccessTokenResponse tokenResponse, String resourceName) {
+		super(buildRoles(accessToken, resourceName));
 		this.userName = idToken.getPreferredUsername();
 		this.setRefreshToken(refreshToken);
 		this.setAccessTokenResponse(tokenResponse);
@@ -45,7 +42,7 @@ public class KeycloakAuthentication extends AbstractAuthenticationToken  {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static GrantedAuthority[] buildRoles(AccessToken accessToken) {
+	private static GrantedAuthority[] buildRoles(AccessToken accessToken, String resourceName) {
 		List<GrantedAuthority> roles;
 		roles = new ArrayList<GrantedAuthority>();
 
@@ -57,6 +54,12 @@ public class KeycloakAuthentication extends AbstractAuthenticationToken  {
 
 		if(accessToken != null && accessToken.getOtherClaims().containsKey("roles")) {
 			for(String role : (List<String>) accessToken.getOtherClaims().get("roles")) {
+				roles.add(new GrantedAuthorityImpl(role));
+			}
+		}
+
+		if (accessToken != null && accessToken.getResourceAccess().containsKey(resourceName)) {
+			for (String role : accessToken.getResourceAccess().get(resourceName).getRoles()) {
 				roles.add(new GrantedAuthorityImpl(role));
 			}
 		}
