@@ -265,7 +265,8 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 
 				IDToken idToken = input.readJsonContent(IDToken.class);
 
-				KeycloakAuthentication auth = new KeycloakAuthentication(idToken, token, refreshToken, tokenResponse);
+				String resourceName = resolvedDeployment.getResourceName();
+				KeycloakAuthentication auth = new KeycloakAuthentication(idToken, token, refreshToken, tokenResponse, resourceName);
 				SecurityContextHolder.getContext().setAuthentication(auth);
 
 				User currentUser = User.current();
