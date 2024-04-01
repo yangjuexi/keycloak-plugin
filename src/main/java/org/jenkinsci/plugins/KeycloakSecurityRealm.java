@@ -38,7 +38,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.base.Strings;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
@@ -266,7 +265,7 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 
 				IDToken idToken = input.readJsonContent(IDToken.class);
 
-				String resourceName = keycloakDeployment.getResourceName();
+				String resourceName = resolvedDeployment.getResourceName();
 				KeycloakAuthentication auth = new KeycloakAuthentication(idToken, token, refreshToken, tokenResponse, resourceName);
 				SecurityContextHolder.getContext().setAuthentication(auth);
 
