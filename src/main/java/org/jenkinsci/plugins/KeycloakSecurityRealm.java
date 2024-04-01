@@ -367,7 +367,7 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 				LOGGER.log(Level.SEVERE, "Logout Exception ", e);
 			}
 		}
-		req.getSession().setAttribute(AUTH_REQUESTED, Boolean.valueOf(false));
+		req.getSession().setAttribute(AUTH_REQUESTED, Boolean.FALSE);
 		super.doLogout(req, rsp);
 	}
 

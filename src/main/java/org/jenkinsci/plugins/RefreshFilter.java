@@ -150,7 +150,7 @@ public class RefreshFilter implements Filter {
 	private void redirectToJenkinsLogoutUrl(ServletResponse res) throws IOException {
 		//reset everything done before and redirect
 		res.reset();
-		Jenkins j = Jenkins.getActiveInstance();
+		Jenkins j = Jenkins.get();
 		HttpServletResponse httpRes = (HttpServletResponse) res;
 		LOGGER.log(Level.INFO, "KeycloakFilter logout requested");
 		String rootURL = j.getRootUrl();
