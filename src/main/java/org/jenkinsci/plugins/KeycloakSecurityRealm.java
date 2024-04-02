@@ -37,14 +37,8 @@ import javax.security.cert.X509Certificate;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.common.base.Strings;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.SecurityListener;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.AuthenticationException;
-import org.acegisecurity.AuthenticationManager;
-import org.acegisecurity.BadCredentialsException;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.OAuth2Constants;
@@ -65,10 +59,7 @@ import org.keycloak.representations.IDToken;
 import org.keycloak.representations.adapters.config.AdapterConfig;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.util.TokenUtil;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -76,6 +67,7 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 
 import hudson.Extension;
@@ -85,6 +77,10 @@ import hudson.security.SecurityRealm;
 import hudson.tasks.Mailer;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  *
@@ -202,7 +198,7 @@ public class KeycloakSecurityRealm extends SecurityRealm {
             builder.queryParam("kc_idp_hint", keycloakIdp);
         }
 		String authUrl = builder.build().toString();
-		request.getSession().setAttribute(AUTH_REQUESTED, Boolean.valueOf(true));
+		request.getSession().setAttribute(AUTH_REQUESTED, Boolean.TRUE);
 		request.getSession().setAttribute(OAuth2Constants.STATE, state);
 		createFilter();
 		return new HttpRedirect(authUrl);
@@ -280,7 +276,7 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 					KeycloakUserDetails userDetails = new KeycloakUserDetails(
 							idToken.getPreferredUsername(), auth.getAuthorities()
 					);
-					SecurityListener.fireAuthenticated(userDetails);
+					SecurityListener.fireAuthenticated2(userDetails);
 				}
 			}
 
@@ -371,7 +367,7 @@ public class KeycloakSecurityRealm extends SecurityRealm {
 				LOGGER.log(Level.SEVERE, "Logout Exception ", e);
 			}
 		}
-		req.getSession().setAttribute(AUTH_REQUESTED, Boolean.valueOf(false));
+		req.getSession().setAttribute(AUTH_REQUESTED, Boolean.FALSE);
 		super.doLogout(req, rsp);
 	}
 

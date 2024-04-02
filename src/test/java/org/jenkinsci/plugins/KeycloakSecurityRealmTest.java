@@ -21,7 +21,7 @@ public class KeycloakSecurityRealmTest {
     @Test
     @ConfiguredWithCode("casc.yaml")
     public void configure_keycloak() {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.get();
         final KeycloakSecurityRealm securityRealm = (KeycloakSecurityRealm) jenkins.getSecurityRealm();
         assertEquals("{\n" +
 			"  \"realm\": \"master\",\n" +
@@ -39,7 +39,7 @@ public class KeycloakSecurityRealmTest {
     public void export_casc_keycloak() throws Exception {
         KeycloakSecurityRealm ksr = new KeycloakSecurityRealm();
         ksr.setKeycloakJson("{\"realm\": \"master\",\"auth-server-url\": \"https://keycloak.example.com/auth/\",\"ssl-required\": \"external\",\"resource\": \"ci-example-com\",\"credentials\": {\"secret\": \"secret-secret-secret\"},\"confidential-port\": 0}");
-		Jenkins.getInstanceOrNull().setSecurityRealm(ksr);
+		Jenkins.get().setSecurityRealm(ksr);
 
         ConfiguratorRegistry registry = ConfiguratorRegistry.get();
         ConfigurationContext context = new ConfigurationContext(registry);

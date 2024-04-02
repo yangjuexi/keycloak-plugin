@@ -2,24 +2,26 @@ package org.jenkinsci.plugins;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import hudson.security.SecurityRealm;
 
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.GrantedAuthorityImpl;
-import org.acegisecurity.providers.AbstractAuthenticationToken;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.IDToken;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 /**
  * 
  * @author Mohammad Nadeem
  * @author dev.lauer@elnarion.de
  *
  */
-public class KeycloakAuthentication extends AbstractAuthenticationToken  {
+public class KeycloakAuthentication extends AbstractAuthenticationToken {
 
 
 	private static final long serialVersionUID = 1L;
@@ -45,30 +47,29 @@ public class KeycloakAuthentication extends AbstractAuthenticationToken  {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static GrantedAuthority[] buildRoles(AccessToken accessToken, String resourceName) {
-		List<GrantedAuthority> roles;
-		roles = new ArrayList<GrantedAuthority>();
+	private static Collection<GrantedAuthority> buildRoles(AccessToken accessToken, String resourceName) {
+		List<GrantedAuthority> roles = new ArrayList<>();
 
 		if (accessToken != null && accessToken.getRealmAccess() != null) {
 			for (String role : accessToken.getRealmAccess().getRoles()) {
-				roles.add(new GrantedAuthorityImpl(role));
+				roles.add(new SimpleGrantedAuthority(role));
 			}
 		}
 
 		if(accessToken != null && accessToken.getOtherClaims().containsKey("roles")) {
 			for(String role : (List<String>) accessToken.getOtherClaims().get("roles")) {
-				roles.add(new GrantedAuthorityImpl(role));
+				roles.add(new SimpleGrantedAuthority(role));
 			}
 		}
 
 		if (accessToken != null && accessToken.getResourceAccess().containsKey(resourceName)) {
 			for (String role : accessToken.getResourceAccess().get(resourceName).getRoles()) {
-				roles.add(new GrantedAuthorityImpl(role));
+				roles.add(new SimpleGrantedAuthority(role));
 			}
 		}
 
-		roles.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
-		return roles.toArray(new GrantedAuthority[roles.size()]);
+		roles.add(SecurityRealm.AUTHENTICATED_AUTHORITY2);
+		return roles;
 	}
 
 	@Override

@@ -16,9 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.ServerRequest;
 import org.keycloak.adapters.ServerRequest.HttpFailure;
@@ -26,6 +23,9 @@ import org.keycloak.representations.AccessTokenResponse;
 
 import hudson.security.SecurityRealm;
 import jenkins.model.Jenkins;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Filter to check the validity of the token
@@ -65,36 +65,34 @@ public class RefreshFilter implements Filter {
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 			throws IOException, ServletException {
 		LOGGER.log(Level.FINER, "KeycloakFilter entered");
-		Jenkins j = Jenkins.getActiveInstance();
-		if (j != null) {
-			SecurityRealm sr = j.getSecurityRealm();
-			if (sr != null) {
-				// only if an instance of KeycloakSecurityRealm is active check token validity
-				if (sr instanceof KeycloakSecurityRealm) {
-					KeycloakSecurityRealm ksr = (KeycloakSecurityRealm) sr;
-					LOGGER.log(Level.FINER, "KeycloakSecurityRealm found");
-					boolean checkTokenValidity = ksr.checkKeycloakOnEachRequest();
-					HttpServletRequest httpRequest = (HttpServletRequest) req;
-					HttpSession session = httpRequest.getSession();
-					Boolean authRequestedAttribute = (Boolean) session
-							.getAttribute(KeycloakSecurityRealm.AUTH_REQUESTED);
-					boolean authenticationRequested = (authRequestedAttribute == null) ? false
-							: authRequestedAttribute.booleanValue();
-					boolean skipUrl = skipUrl(httpRequest);
-					LOGGER.log(Level.FINEST,
-							"RequestPath" + httpRequest.getPathInfo() + " skipUrl" + skipUrl
-									+ " AuthenticationRequested" + authenticationRequested + " CheckRequest"
-									+ checkTokenValidity);
-					// only if a check is configured and the user already logged in and the
-					// requested URL does not end with logout do filtering
-					if (checkTokenValidity && !skipUrl && authenticationRequested) {
-						boolean tokeninvalid = checkTokenValidity(res, ksr);
-						if (tokeninvalid)
-							return;
-					}
-					// normal processing
-					chain.doFilter(req, res);
+		Jenkins j = Jenkins.get();
+		SecurityRealm sr = j.getSecurityRealm();
+		if (sr != null) {
+			// only if an instance of KeycloakSecurityRealm is active check token validity
+			if (sr instanceof KeycloakSecurityRealm) {
+				KeycloakSecurityRealm ksr = (KeycloakSecurityRealm) sr;
+				LOGGER.log(Level.FINER, "KeycloakSecurityRealm found");
+				boolean checkTokenValidity = ksr.checkKeycloakOnEachRequest();
+				HttpServletRequest httpRequest = (HttpServletRequest) req;
+				HttpSession session = httpRequest.getSession();
+				Boolean authRequestedAttribute = (Boolean) session
+						.getAttribute(KeycloakSecurityRealm.AUTH_REQUESTED);
+				boolean authenticationRequested = (authRequestedAttribute == null) ? false
+						: authRequestedAttribute.booleanValue();
+				boolean skipUrl = skipUrl(httpRequest);
+				LOGGER.log(Level.FINEST,
+						"RequestPath" + httpRequest.getPathInfo() + " skipUrl" + skipUrl
+								+ " AuthenticationRequested" + authenticationRequested + " CheckRequest"
+								+ checkTokenValidity);
+				// only if a check is configured and the user already logged in and the
+				// requested URL does not end with logout do filtering
+				if (checkTokenValidity && !skipUrl && authenticationRequested) {
+					boolean tokeninvalid = checkTokenValidity(res, ksr);
+					if (tokeninvalid)
+						return;
 				}
+				// normal processing
+				chain.doFilter(req, res);
 			}
 		}
 	}
@@ -152,7 +150,7 @@ public class RefreshFilter implements Filter {
 	private void redirectToJenkinsLogoutUrl(ServletResponse res) throws IOException {
 		//reset everything done before and redirect
 		res.reset();
-		Jenkins j = Jenkins.getActiveInstance();
+		Jenkins j = Jenkins.get();
 		HttpServletResponse httpRes = (HttpServletResponse) res;
 		LOGGER.log(Level.INFO, "KeycloakFilter logout requested");
 		String rootURL = j.getRootUrl();

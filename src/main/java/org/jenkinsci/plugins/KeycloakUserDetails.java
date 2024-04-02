@@ -23,10 +23,12 @@
  */
 package org.jenkinsci.plugins;
 
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.userdetails.User;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+
+import java.util.Collection;
 
 /**
  * The Class KeycloakUserDetails.
@@ -48,7 +50,7 @@ public class KeycloakUserDetails extends User {
 	 * @param authorities the authorities
 	 * @throws IllegalArgumentException the illegal argument exception
 	 */
-    public KeycloakUserDetails(String username, GrantedAuthority[] authorities) throws IllegalArgumentException {
+    public KeycloakUserDetails(String username, Collection<GrantedAuthority> authorities) throws IllegalArgumentException {
         super(username, "", true, true, true, true, authorities);
     }
 }
